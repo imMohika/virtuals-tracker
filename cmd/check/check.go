@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strconv"
 	"virtuals-tracker/cmd/global"
 	"virtuals-tracker/database"
 	"virtuals-tracker/telegram"
@@ -65,9 +66,32 @@ func (cmd *Cmd) Run(_ *global.Flags, queries *database.Queries) error {
 		currPage++
 	}
 
+	if len(sendNotif) == 0 {
+		fmt.Println("No new agents found")
+		return nil
+	}
+
+	bot, err := telegram.GetBot()
+	if err != nil {
+		return err
+	}
+	defer bot.Close()
+
 	fmt.Printf("Sending notifs for %d agents\n", len(sendNotif))
 	for _, data := range sendNotif {
 		err := telegram.SendNotif(data)
+		if err != nil {
+			return err
+		}
+
+		_, err = queries.CreateAgent(ctx, database.CreateAgentParams{
+			Uid:      data.UID,
+			Name:     data.Name,
+			Status:   data.Status,
+			Category: data.Category,
+			Mcap:     strconv.FormatFloat(data.McapInVirtual, 'f', -1, 64),
+			Notified: true,
+		})
 		if err != nil {
 			return err
 		}

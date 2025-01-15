@@ -38,6 +38,7 @@ fabric.properties
 go.work
 
 .idea
+.env
 tmp
 *.db
 database/*.go

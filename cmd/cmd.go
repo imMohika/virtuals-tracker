@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/alecthomas/kong"
+	"github.com/joho/godotenv"
+	"log"
 	"os"
 	"virtuals-tracker/cmd/check"
 	"virtuals-tracker/cmd/global"
@@ -19,9 +21,15 @@ type CLI struct {
 	Globals  global.Flags `embed:"" group:"Global Options"`
 	Check    check.Cmd    `cmd:"" help:"Check virtuals for updated data and notify"`
 	Populate populate.Cmd `cmd:"" help:"populate database with initial data"`
+	//Notify   notify.Cmd   `cmd:"" help:"send notification for database entries"`
 }
 
 func Execute() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	db, err := sql.Open("sqlite3", "file:./sqlite.db")
 	if err != nil {
 		fmt.Println("Failed to connect to database", err)
